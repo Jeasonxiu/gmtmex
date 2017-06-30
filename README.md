@@ -1,5 +1,4 @@
-# Gmtmex
-GMT API for MATLAB
+# Gmtmex - GMT API for MATLAB
 
 # Introduction
 
