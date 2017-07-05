@@ -55,4 +55,18 @@ all **GMT** options are put in a single text string that is passed, plus the dat
 to the ``gmt()`` command. For example to reproduce the CookBook example of an Hemisphere map using a
 Azimuthal projection
 
+   gmt('pscoast -Rg -JA280/30/3.5i -Bg -Dc -A1000 -Gnavy -P > GMT_lambert_az_hemi.ps')
+
+but that is not particularly interesting as after all we could do the exact same thing on the a shell
+command line. Things start to get interesting when we can send data *in* and *out* from MATLAB to
+**GMT**. So, consider the following example
+
+    t = rand(100,3) * 150;
+    G = gmt('surface -R0/150/0/150 -I1', t);
+
+Here we just created a random data *100x3* matrix and told **GMT** to grid it using it's program
+*surface*. Note how the syntax follows closely the standard usage but we sent the data to be
+interpolated (the *t* matrix) as the second argument to the ``gmt()`` function. And on return we
+got the *G* variable that is a structure holding the grid and it's metadata. See the 
+``grid struct` for the details of its members.
 
