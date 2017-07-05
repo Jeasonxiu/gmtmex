@@ -70,11 +70,11 @@ interpolated (the *t* matrix) as the second argument to the ``gmt()`` function. 
 got the *G* variable that is a structure holding the grid and it's metadata. See the 
 ``grid struct`` for the details of its members.
 
-Imagining that we want to plot that random data art, we can do it with a call to *grdimage*\ , like
+Imagining that we want to plot that random data art, we can do it with a call to *grdimage*, like
 
     gmt('grdimage -JX8c -Ba -P -Cblue,red > crap_img.ps', G)
 
-Note that we now sent the *G grid* as argument instead of the **-G**\ *gridname* that we would have
+Note that we now sent the *G grid* as argument instead of the **-G** *gridname* that we would have
 used in the command line. But for readability we could well had left the **-G** option in command string. E.g:
 
     gmt('grdimage -JX8c -Ba -P -Cblue,red -G > crap_img.ps', G)
@@ -83,11 +83,46 @@ While for this particular case it makes no difference to use or not the **-G**, 
 one input, the same does not hold true when we have more than one. For example, we can run the same example
 but compute the CPT separately.
 
-   cpt = gmt('grd2cpt -Cblue,red', G);
-   gmt('grdimage -JX8c -Ba -P -C -G > crap_img.ps', G, cpt)
+    cpt = gmt('grd2cpt -Cblue,red', G);
+    gmt('grdimage -JX8c -Ba -P -C -G > crap_img.ps', G, cpt)
 
 Now we had to explicitly write the **-C** & **-G** (well, actually we could have omitted the **-G** because
 it's a mandatory input but that would make the things more confusing). Note also the order of the input data variables.
 It is crucial that any *required* (primary) input data objects (for grdimage that is the grid) are given before
 any *optional* (secondary) input data objects (here, that is the CPT object).  The same is true for modules that
 return more than one item: List the required output object first followed by optional ones.
+
+To illustrate another aspect on the importance of the order of input data let us see how to plot a sine curve
+made of colored filled circles.
+
+    x = linspace(-pi, pi)';            % The *xx* var
+    seno = sin(x);                     % *yy*
+    xyz  = [x seno seno];              % Duplicate *yy* so that it can be colored
+    cpt  = gmt('makecpt -T-1/1/0.1');  % Create a CPT
+    gmt('psxy -R-3.2/3.2/-1.1/1.1 -JX12c -Sc0.1c -C -P -Ba > seno.ps', xyz, cpt)
+
+The point here is that we had to give *xyz, cpt* and not *cpt, xyz* (which would error) because optional input data
+associated with an option letter **always comes after the required input**.
+
+To plot text strings we send in the input data wrapped in a cell array. Example:
+
+    lines = {'5 6 Some label', '6 7 Another label'};
+    gmt('pstext -R0/10/0/10 -JM6i -Bafg -F+f18p -P > text.ps', lines)
+
+and we get back text info in cell arrays as well. Using the *G* grid computed above we can run *gmtinfo* on it
+
+    info = gmt('info', G)
+     
+At the end of an **GMT** session work we call the internal functions that will do the house keeping of
+freeing no longer needed memory. We do that with this command:
+
+    gmt('destroy')
+
+
+So that's basically how it works. When numeric data have to be sent *in* to **GMT** we use
+MATLAB variables holding the data in matrices or structures or cell arrays, depending on data type. On
+return we get the computed result stored in variables that we gave as output arguments.
+Things only complicate a little more for the cases where we can have more than one *input* or
+*output* arguments, since the order or the arguments matter (Remember the rule: primary first, secondary second).
+The file *gallery.m*, that reproduces the examples in the Gallery section of the GMT
+documentation, has many (not so trivial) examples on usage of the MEX GMT API.
