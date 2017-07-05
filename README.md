@@ -55,7 +55,7 @@ all **GMT** options are put in a single text string that is passed, plus the dat
 to the ``gmt()`` command. For example to reproduce the CookBook example of an Hemisphere map using a
 Azimuthal projection
 
-   gmt('pscoast -Rg -JA280/30/3.5i -Bg -Dc -A1000 -Gnavy -P > GMT_lambert_az_hemi.ps')
+    gmt('pscoast -Rg -JA280/30/3.5i -Bg -Dc -A1000 -Gnavy -P > GMT_lambert_az_hemi.ps')
 
 but that is not particularly interesting as after all we could do the exact same thing on the a shell
 command line. Things start to get interesting when we can send data *in* and *out* from MATLAB to
@@ -68,5 +68,26 @@ Here we just created a random data *100x3* matrix and told **GMT** to grid it us
 *surface*. Note how the syntax follows closely the standard usage but we sent the data to be
 interpolated (the *t* matrix) as the second argument to the ``gmt()`` function. And on return we
 got the *G* variable that is a structure holding the grid and it's metadata. See the 
-``grid struct` for the details of its members.
+``grid struct`` for the details of its members.
 
+Imagining that we want to plot that random data art, we can do it with a call to *grdimage*\ , like
+
+    gmt('grdimage -JX8c -Ba -P -Cblue,red > crap_img.ps', G)
+
+Note that we now sent the *G grid* as argument instead of the **-G**\ *gridname* that we would have
+used in the command line. But for readability we could well had left the **-G** option in command string. E.g:
+
+    gmt('grdimage -JX8c -Ba -P -Cblue,red -G > crap_img.ps', G)
+
+While for this particular case it makes no difference to use or not the **-G**, because there is **only**
+one input, the same does not hold true when we have more than one. For example, we can run the same example
+but compute the CPT separately.
+
+   cpt = gmt('grd2cpt -Cblue,red', G);
+   gmt('grdimage -JX8c -Ba -P -C -G > crap_img.ps', G, cpt)
+
+Now we had to explicitly write the **-C** & **-G** (well, actually we could have omitted the **-G** because
+it's a mandatory input but that would make the things more confusing). Note also the order of the input data variables.
+It is crucial that any *required* (primary) input data objects (for grdimage that is the grid) are given before
+any *optional* (secondary) input data objects (here, that is the CPT object).  The same is true for modules that
+return more than one item: List the required output object first followed by optional ones.
